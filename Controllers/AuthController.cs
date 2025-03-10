@@ -1,4 +1,5 @@
 ﻿using IdentityServer.Models;
+using IdentityServer.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +12,13 @@ namespace IdentityServer.Controllers
     {
 
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ITokenGenerationService _tokenService;
 
 
-        public AuthController (UserManager<IdentityUser> userManager)
+        public AuthController (UserManager<IdentityUser> userManager, ITokenGenerationService tokenService)
         {
             _userManager = userManager;
+            _tokenService = tokenService;
         }
 
 
@@ -37,6 +40,22 @@ namespace IdentityServer.Controllers
 
         }
 
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+            {
+                return Unauthorized("Invalid Credentials");
+            }
+
+            var tokenResponse = await _tokenService.GenerateTokenAsync(user, model.Password);
+
+            return Ok(tokenResponse);
+
+        }
 
 
 

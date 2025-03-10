@@ -35,6 +35,7 @@ builder.Services.AddControllers();
 
 
 builder.Services.AddScoped<IProfileService,IdentityProfileService>();
+builder.Services.AddScoped<ITokenGenerationService,TokenGenerationService>();
 
 builder.Services.AddIdentityServer(options =>
 {
